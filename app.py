@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_mcp import FastApiMCP
@@ -6,8 +7,11 @@ from duckduckgo_search import DuckDuckGoSearcher
 from goggles import GogglesApi
 from web_wrapper import WebWrapper
 
+# Get Goggles URL from environment variable, with fallback to default
+GOGGLES_URL = os.getenv("GOGGLES_URL", "http://192.168.68.94:8003")
+
 # Initialize the services
-goggles = GogglesApi("http://192.168.68.94:8003")
+goggles = GogglesApi(GOGGLES_URL)
 web_wrapper = WebWrapper(goggles)
 searcher = DuckDuckGoSearcher()
 

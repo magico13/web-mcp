@@ -9,6 +9,7 @@ services:
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
+      - GOGGLES_URL=${GOGGLES_URL:-http://192.168.68.94:8003}
     networks:
       - web-mcp-network
 

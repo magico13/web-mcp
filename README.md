@@ -106,12 +106,27 @@ Connect this server to any MCP client (Claude Desktop, Cursor, Windsurf) using:
 
 ## Configuration
 
-The Goggles API endpoint is configured in `app.py`. By default, it points to:
-```python
-goggles = GogglesApi("http://192.168.68.94:8003")
-```
+### Goggles API Endpoint
 
-Update this URL to match your Goggles instance if needed.
+The Goggles API endpoint can be configured via the `GOGGLES_URL` environment variable.
+
+**Default:** `http://192.168.68.94:8003`
+
+**Set via environment variable:**
+```bash
+# Linux/Mac
+export GOGGLES_URL=http://your-goggles-instance:8003
+
+# Windows PowerShell
+$env:GOGGLES_URL="http://your-goggles-instance:8003"
+
+# Docker
+docker run -e GOGGLES_URL=http://your-goggles-instance:8003 -p 8000:8000 web-mcp-server
+
+# Docker Compose
+# Create a .env file in the project root:
+echo "GOGGLES_URL=http://your-goggles-instance:8003" > .env
+```
 
 ## Docker Hub Deployment
 
