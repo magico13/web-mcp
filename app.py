@@ -116,11 +116,14 @@ async def get_url_content(
 
 
 # Create an MCP server based on this app
-mcp = FastApiMCP(app)
+mcp = FastApiMCP(
+    app,
+    name="Web Search MCP Server",
+    description="MCP server for web search and URL content retrieval",
+)
 
 # Mount the MCP server to the app
-mcp.mount_http()
-
+mcp.mount()
 
 if __name__ == "__main__":
     import uvicorn
