@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web-mcp:
+    build: .
+    container_name: web-mcp-server
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - web-mcp-network
+
+networks:
+  web-mcp-network:
+    driver: bridge

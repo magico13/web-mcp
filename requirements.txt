@@ -1,0 +1,12 @@
+# FastAPI and MCP
+fastapi
+fastapi-mcp
+uvicorn[standard]
+
+# Web scraping and HTTP requests
+requests
+beautifulsoup4
+markdownify
+
+# Type hints support (if needed for older Python versions)
+typing-extensions
