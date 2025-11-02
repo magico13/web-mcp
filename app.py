@@ -8,7 +8,7 @@ from goggles import GogglesApi
 from web_wrapper import WebWrapper
 
 # Get Goggles URL from environment variable, with fallback to default
-GOGGLES_URL = os.getenv("GOGGLES_URL", "http://192.168.68.94:8003")
+GOGGLES_URL = os.getenv("GOGGLES_URL", "http://localhost:8001")
 
 # Initialize the services
 goggles = GogglesApi(GOGGLES_URL)
