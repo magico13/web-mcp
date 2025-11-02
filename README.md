@@ -5,10 +5,9 @@ A Model Context Protocol (MCP) server for web search and URL content retrieval, 
 ## Features
 
 - **Web Search**: Search the web using DuckDuckGo
-- **URL Content Retrieval**: Fetch and parse content from any URL
-  - Text format: Extract plain text and links
-  - Markdown format: Convert HTML to markdown
-  - File support: Extract text from various file types via Goggles API
+- **URL Content Retrieval**: Fetch and parse content from any URL as markdown
+  - HTML pages: Convert to clean markdown format
+  - Files: Extract text from various file types via Goggles API (PDF, DOCX, etc.)
 
 ## Running Locally
 
@@ -80,19 +79,15 @@ curl "http://localhost:8000/search?query=python+programming"
 ```
 
 ### `/content` - Get URL Content
-Retrieve and parse content from a URL.
+Retrieve and parse content from a URL, returned as markdown.
 
 **Parameters:**
 - `url` (string, required): The URL to fetch content from
-- `format` (string, optional): Return format - "text" or "markdown" (default: "text")
 
-**Examples:**
+**Example:**
 ```bash
-# Get text content
-curl "http://localhost:8000/content?url=https://example.com"
-
 # Get markdown content
-curl "http://localhost:8000/content?url=https://example.com&format=markdown"
+curl "http://localhost:8000/content?url=https://example.com"
 ```
 
 ## MCP Integration
