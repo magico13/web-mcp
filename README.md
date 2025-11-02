@@ -79,16 +79,29 @@ curl "http://localhost:8000/search?query=python+programming"
 ```
 
 ### `/content` - Get URL Content
-Retrieve and parse content from a URL, returned as markdown.
+Retrieve and parse content from a URL, returned as markdown with pagination support.
 
 **Parameters:**
 - `url` (string, required): The URL to fetch content from
+- `offset` (integer, optional): Character offset to start from (default: 0)
+- `limit` (integer, optional): Maximum characters to return (default: 10000, max: 50000)
 
-**Example:**
+**Examples:**
 ```bash
-# Get markdown content
+# Get first 10,000 characters (default)
 curl "http://localhost:8000/content?url=https://example.com"
+
+# Get specific range
+curl "http://localhost:8000/content?url=https://example.com&offset=10000&limit=10000"
+
+# Get more content (up to 50,000 characters)
+curl "http://localhost:8000/content?url=https://example.com&limit=50000"
 ```
+
+**Response includes pagination info:**
+- `total`: Total content length
+- `returned`: Characters returned in this response
+- `has_more`: Whether more content is available
 
 ## MCP Integration
 

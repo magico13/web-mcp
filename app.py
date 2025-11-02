@@ -60,34 +60,58 @@ async def search_web(
         }
 
 
-@app.get("/content", summary="Get URL content", description="Retrieve the content from a given URL")
+@app.get("/content", summary="Get URL content", description="Retrieve the content from a given URL with pagination support")
 async def get_url_content(
-    url: str = Query(..., description="The URL to fetch content from")
+    url: str = Query(..., description="The URL to fetch content from"),
+    offset: int = Query(0, ge=0, description="Character offset to start from (for pagination)"),
+    limit: int = Query(10000, ge=1, le=50000, description="Maximum number of characters to return (1-50000)")
 ) -> dict:
     """
-    Get the content of a URL.
+    Get the content of a URL with pagination support.
     
     Args:
         url: The URL to fetch content from
+        offset: Character position to start from (default: 0)
+        limit: Maximum characters to return (default: 10000, max: 50000)
         
     Returns:
-        Dictionary containing the URL, content, description
+        Dictionary containing the URL, content (paginated), description, and pagination info
     """
     try:
-        code, content, description = web_wrapper.get_markdown_for_url(url)
+        code, full_content, description = web_wrapper.get_markdown_for_url(url)
+        
+        # Apply pagination
+        total_length = len(full_content)
+        end_offset = min(offset + limit, total_length)
+        paginated_content = full_content[offset:end_offset]
+        
         return {
             "url": url,
             "status_code": code,
-            "content": content,
+            "content": paginated_content,
             "description": description,
-            "format": "markdown"
+            "format": "markdown",
+            "pagination": {
+                "offset": offset,
+                "limit": limit,
+                "returned": len(paginated_content),
+                "total": total_length,
+                "has_more": end_offset < total_length
+            }
         }
     except Exception as e:
         return {
             "url": url,
             "status_code": 500,
             "content": "",
-            "error": str(e)
+            "error": str(e),
+            "pagination": {
+                "offset": offset,
+                "limit": limit,
+                "returned": 0,
+                "total": 0,
+                "has_more": False
+            }
         }
 
 
