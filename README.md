@@ -113,6 +113,22 @@ goggles = GogglesApi("http://192.168.68.94:8003")
 
 Update this URL to match your Goggles instance if needed.
 
+## Docker Hub Deployment
+
+This repository includes a GitHub Actions workflow that automatically builds and pushes Docker images to Docker Hub when code is pushed to the `main` branch.
+
+### Setup GitHub Secrets and Variables
+
+To enable automatic Docker Hub deployment, configure the following in your GitHub repository settings:
+
+**Secrets** (Settings → Secrets and variables → Actions → New repository secret):
+- `DOCKER_PASSWORD`: Your Docker Hub password or access token
+
+**Variables** (Settings → Secrets and variables → Actions → New repository variable):
+- `DOCKER_USERNAME`: Your Docker Hub username
+
+Once configured, every push to `main` will automatically build and push a new Docker image tagged with both `latest` and the commit SHA.
+
 ## Dependencies
 
 - fastapi - Web framework
