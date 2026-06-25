@@ -1,7 +1,5 @@
 import os
-from fastapi import FastAPI, Query
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi_mcp import FastApiMCP
+from fastmcp import FastMCP
 
 from duckduckgo_search import DuckDuckGoSearcher
 from goggles import GogglesApi
@@ -15,29 +13,12 @@ goggles = GogglesApi(GOGGLES_URL)
 web_wrapper = WebWrapper(goggles)
 searcher = DuckDuckGoSearcher()
 
-# Create a FastAPI app
-app = FastAPI(
-    title="Web Search MCP Server",
-    description="MCP server for web search and URL content retrieval",
-    version="1.0.0"
-)
+# Create MCP server
+mcp = FastMCP("Web Search MCP Server")
 
-# Add CORS middleware to handle preflight OPTIONS requests
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for MCP server usage
-    allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods including OPTIONS
-    allow_headers=["*"],  # Allow all headers
-)
-
-
-@app.get("/search", summary="Search the web", description="Perform a web search with the given search string")
-async def search_web(
-    query: str = Query(..., description="The search query string")
-) -> dict:
-    """
-    Perform a web search using DuckDuckGo.
+@mcp.tool
+def search_web(query: str) -> dict:
+    """Perform a web search using DuckDuckGo.
     
     Args:
         query: The search query string
@@ -60,14 +41,9 @@ async def search_web(
         }
 
 
-@app.get("/content", summary="Get URL content", description="Retrieve the content from a given URL with pagination support")
-async def get_url_content(
-    url: str = Query(..., description="The URL to fetch content from"),
-    offset: int = Query(0, ge=0, description="Character offset to start from (for pagination)"),
-    limit: int = Query(10000, ge=1, le=50000, description="Maximum number of characters to return (1-50000)")
-) -> dict:
-    """
-    Get the content of a URL with pagination support.
+@mcp.tool
+def get_url_content(url: str, offset: int = 0, limit: int = 10000) -> dict:
+    """Retrieve the content from a given URL with pagination support.
     
     Args:
         url: The URL to fetch content from
@@ -115,16 +91,5 @@ async def get_url_content(
         }
 
 
-# Create an MCP server based on this app
-mcp = FastApiMCP(
-    app,
-    name="Web Search MCP Server",
-    description="MCP server for web search and URL content retrieval",
-)
-
-# Mount the MCP server to the app
-mcp.mount()
-
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    mcp.run(transport="streamable-http", host="0.0.0.0", port=8000)

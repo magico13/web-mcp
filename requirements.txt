@@ -1,7 +1,5 @@
-# FastAPI and MCP
-fastapi
-fastapi-mcp
-uvicorn[standard]
+# FastMCP (modern MCP server)
+fastmcp
 
 # Web scraping and HTTP requests
 requests
