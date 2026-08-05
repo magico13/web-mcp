@@ -1,12 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter
+import time
+import os
 
 from goggles import GogglesApi
 
 class WebWrapper:
     def __init__(self, goggles: GogglesApi):
         self.goggles = goggles
+        # Read cache TTL from environment variable (default 300 seconds / 5 minutes)
+        self.cache_ttl = int(os.environ.get("WEB_CACHE_TTL", 300))
         self._web_cache = {}
 
     def clear_cache(self):
@@ -17,18 +21,26 @@ class WebWrapper:
         """Get the markdown for a website or file at a given URL"""
         try:
             if url in self._web_cache:
-                code = self._web_cache[url].get('code', 200)
-                markdown = self._web_cache[url].get('markdown', '')
-                description = self._web_cache[url].get('description', '')
-                return code, markdown, description
+                cached_data = self._web_cache[url]
+                # Check if cache is still valid based on TTL
+                if time.time() - cached_data.get('timestamp', 0) < self.cache_ttl:
+                    code = cached_data.get('code', 200)
+                    markdown = cached_data.get('markdown', '')
+                    description = cached_data.get('description', '')
+                    return code, markdown, description
+                else:
+                    # Cache expired, remove it
+                    del self._web_cache[url]
             
             code, text, _, _ = self.get_text_for_url(url)
             if code != 200:
                 return code, text, ''
-            # must be cached now
-            code = self._web_cache[url].get('code', 200)
-            markdown = self._web_cache[url].get('markdown', '')
-            description = self._web_cache[url].get('description', '')
+            
+            # The result is now cached inside get_text_for_url
+            cached_data = self._web_cache[url]
+            code = cached_data.get('code', 200)
+            markdown = cached_data.get('markdown', '')
+            description = cached_data.get('description', '')
             return code, markdown, description
         except Exception as e:
             print("Exception in get_markdown_for_url: " + str(e))
@@ -42,18 +54,29 @@ class WebWrapper:
             links = []
             markdown = ''
             if url in self._web_cache:
-                text = self._web_cache[url].get('text', '')
-                description = self._web_cache[url].get('description', '')
-                links = self._web_cache[url].get('links', [])
-                return 200, text, description, links
+                cached_data = self._web_cache[url]
+                # Check if cache is still valid based on TTL
+                if time.time() - cached_data.get('timestamp', 0) < self.cache_ttl:
+                    code = cached_data.get('code', 200)
+                    text = cached_data.get('text', '')
+                    description = cached_data.get('description', '')
+                    links = cached_data.get('links', [])
+                    return code, text, description, links
+                else:
+                    # Cache expired, remove it
+                    del self._web_cache[url]
+
             response = requests.get(url, timeout=5)
             content = response.content
             code = response.status_code
             if not response.ok: return code, response.text, description, links
             if response.headers['Content-Type'].startswith('text/html'):
                 # website, use beautifulsoup to get the text
+                
+                #turn content into a string from bytes
+                content = content.decode('utf-8', errors='ignore')
                 soup = BeautifulSoup(content, 'html.parser')
-                if soup.body is None: return code, '', []
+                if soup.body is None: return code, '', '', []
                 markdown = MarkdownConverter().convert_soup(soup)
                 text = soup.body.text
                 # split to newlines and remove leading and trailing spaces on each line
@@ -77,7 +100,16 @@ class WebWrapper:
                     text = goggles_response
                     description = ''
                     markdown = text
-            self._web_cache[url] = {'text': text, 'markdown': markdown, 'description': description, 'links': links}
+            
+            # Cache the result with a timestamp
+            self._web_cache[url] = {
+                'code': code,
+                'text': text, 
+                'markdown': markdown, 
+                'description': description, 
+                'links': links,
+                'timestamp': time.time()
+            }
             return code, text, description, links # type: ignore
         except Exception as e:
             print("Exception in get_text_for_url: " + str(e))

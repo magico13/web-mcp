@@ -19,6 +19,8 @@ mcp = FastMCP("Web Search MCP Server")
 @mcp.tool
 def search_web(query: str) -> dict:
     """Perform a web search using DuckDuckGo.
+    Snippets are from cached information, use the get_url_content tool to fetch the latest content from a specific URL
+    when you need the most up-to-date information (weather, news, etc.).
     
     Args:
         query: The search query string
@@ -30,25 +32,28 @@ def search_web(query: str) -> dict:
         results = searcher.search(query)
         return {
             "query": query,
+            "count": len(results),
             "results": results,
-            "count": len(results)
+            "error": None
         }
     except Exception as e:
         return {
             "query": query,
+            "count": 0,
             "results": [],
             "error": str(e)
         }
 
 
 @mcp.tool
-def get_url_content(url: str, offset: int = 0, limit: int = 10000) -> dict:
+def get_url_content(url: str, page: int = 1, page_size: int = 50000) -> dict:
     """Retrieve the content from a given URL with pagination support.
+    Use to get the most up-to-date (live) information from a specific URL (weather, news, etc.).
     
     Args:
         url: The URL to fetch content from
-        offset: Character position to start from (default: 0)
-        limit: Maximum characters to return (default: 10000, max: 50000)
+        page: Page number to retrieve (default: 1)
+        page_size: Maximum characters to return per page (default: 50000)
         
     Returns:
         Dictionary containing the URL, content (paginated), description, and pagination info
@@ -58,36 +63,39 @@ def get_url_content(url: str, offset: int = 0, limit: int = 10000) -> dict:
         
         # Apply pagination
         total_length = len(full_content)
-        end_offset = min(offset + limit, total_length)
-        paginated_content = full_content[offset:end_offset]
+        total_pages = (total_length + page_size - 1) // page_size  # Calculate total pages
+        start_offset = (page - 1) * page_size
+        end_offset = min(start_offset + page_size, total_length)
+        paginated_content = full_content[start_offset:end_offset]
         
         return {
             "url": url,
             "status_code": code,
-            "content": paginated_content,
             "description": description,
             "format": "markdown",
+            "error": None,
             "pagination": {
-                "offset": offset,
-                "limit": limit,
-                "returned": len(paginated_content),
-                "total": total_length,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
                 "has_more": end_offset < total_length
-            }
+            },
+            "content": paginated_content
         }
     except Exception as e:
         return {
             "url": url,
             "status_code": 500,
-            "content": "",
+            "description": "",
+            "format": "markdown",
             "error": str(e),
             "pagination": {
-                "offset": offset,
-                "limit": limit,
-                "returned": 0,
-                "total": 0,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": 0,
                 "has_more": False
-            }
+            },
+            "content": ""
         }
 
 
