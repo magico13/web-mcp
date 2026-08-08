@@ -15,6 +15,7 @@ COPY app.py .
 COPY duckduckgo_search.py .
 COPY goggles.py .
 COPY web_wrapper.py .
+COPY nws_forecast.py .
 
 # Expose port 8000
 EXPOSE 8000

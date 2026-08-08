@@ -3,7 +3,9 @@ from fastmcp import FastMCP
 
 from duckduckgo_search import DuckDuckGoSearcher
 from goggles import GogglesApi
+import nws_forecast
 from web_wrapper import WebWrapper
+from nws_forecast import get_nws_forecast
 
 # Get Goggles URL from environment variable, with fallback to default
 GOGGLES_URL = os.getenv("GOGGLES_URL", "http://localhost:8001")
@@ -46,14 +48,14 @@ def search_web(query: str) -> dict:
 
 
 @mcp.tool
-def get_url_content(url: str, page: int = 1, page_size: int = 50000) -> dict:
-    """Retrieve the content from a given URL with pagination support.
+def open_url(url: str, page: int = 1, page_size: int = 25000) -> dict:
+    """Open a URL and retrieve its content with pagination support.
     Use to get the most up-to-date (live) information from a specific URL (weather, news, etc.).
     
     Args:
         url: The URL to fetch content from
         page: Page number to retrieve (default: 1)
-        page_size: Maximum characters to return per page (default: 50000)
+        page_size: Maximum characters to return per page (default: 25000)
         
     Returns:
         Dictionary containing the URL, content (paginated), description, and pagination info
@@ -98,6 +100,19 @@ def get_url_content(url: str, page: int = 1, page_size: int = 50000) -> dict:
             "content": ""
         }
 
+@mcp.tool
+def get_nws_forecast(lat: float, lon: float) -> str:
+    """Get the 7-day National Weather Service forecast for a given latitude and longitude.
+    Use this for weather information instead of the web search tool, as it provides a more structured and reliable forecast.
+    Use the web search to find coordinates for location names if needed (e.g., "New York City coordinates").
+    
+    Args:
+        lat: Latitude of the location
+        lon: Longitude of the location
+    Returns:
+        National Weather Service forecast as a string
+    """
+    return nws_forecast.get_nws_forecast(lat, lon)
 
 if __name__ == "__main__":
     mcp.run(transport="streamable-http", host="0.0.0.0", port=8000)
